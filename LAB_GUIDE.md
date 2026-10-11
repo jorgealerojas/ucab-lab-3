@@ -10,7 +10,35 @@
 
 ## 0–15 min — Preparar el entorno
 
-Despliegue siguiendo el README y anote el identificador generado automáticamente. No lo cambie ni invente uno. Si la cuenta es compartida, no abra, modifique ni elimine el stack de otro estudiante. Dentro de Session Manager, confirme que eligió la instancia cuyo nombre coincide con su identificador y cambie al usuario del laboratorio:
+### 1. Abrir CloudShell en Ohio
+
+En la consola AWS, seleccione **US East (Ohio), `us-east-2`**. Pulse el icono de terminal de la barra superior para abrir CloudShell. Verifique que la pestaña de CloudShell también diga `us-east-2`, como en la captura:
+
+![Ubicación del icono de CloudShell y terminal abierta en la región Ohio](docs/images/01-abrir-cloudshell.png)
+
+### 2. Crear el laboratorio
+
+Pegue estos comandos en CloudShell:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/jorgealerojas/ucab-lab-3/main/scripts/deploy-lab.sh \
+  -o /tmp/deploy-lab.sh
+bash /tmp/deploy-lab.sh
+```
+
+Anote inmediatamente el valor mostrado después de `Identificador generado`. No lo cambie ni invente uno.
+
+### 3. Observar CloudFormation
+
+Sin interrumpir el comando, abra **CloudFormation → Stacks** en otra pestaña. Busque el nombre que coincide con su identificador. Durante la preparación debe mostrar `CREATE_IN_PROGRESS`:
+
+![Stack del laboratorio visible en CloudFormation con estado CREATE_IN_PROGRESS](docs/images/02-cloudformation-creando-stack.png)
+
+Espere a que CloudShell muestre `LABORATORIO LISTO` y a que el stack cambie a `CREATE_COMPLETE`. Puede tardar entre 3 y 8 minutos. No continúe si aparece `CREATE_FAILED` o `ROLLBACK_COMPLETE`; consulte [TROUBLESHOOTING.md](TROUBLESHOOTING.md).
+
+### 4. Entrar a la instancia
+
+Si la cuenta es compartida, no abra, modifique ni elimine el stack de otro estudiante. En **EC2 → Instances**, seleccione la instancia cuyo nombre coincide exactamente con su identificador y abra **Connect → Session Manager**. En la terminal, cambie al usuario del laboratorio:
 
 ```bash
 sudo -iu student

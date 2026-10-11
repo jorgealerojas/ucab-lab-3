@@ -30,7 +30,11 @@ Anote el valor generado en la evidencia. Es la referencia que debe usar para con
 
 ## Despliegue rápido desde AWS CloudShell
 
-Seleccione Ohio en la consola, abra CloudShell y ejecute:
+Seleccione **US East (Ohio), `us-east-2`** en la consola. Abra CloudShell con el icono de terminal de la barra superior; aparecerá un panel en la parte inferior. Confirme que la pestaña del panel también muestre `us-east-2`.
+
+![Consola AWS con el icono de CloudShell y la terminal abierta en us-east-2](docs/images/01-abrir-cloudshell.png)
+
+En CloudShell, ejecute:
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/jorgealerojas/ucab-lab-3/main/scripts/deploy-lab.sh \
@@ -38,7 +42,11 @@ curl -fsSL https://raw.githubusercontent.com/jorgealerojas/ucab-lab-3/main/scrip
 bash /tmp/deploy-lab.sh
 ```
 
-La creación puede tardar entre 3 y 8 minutos. CloudFormation no indicará `CREATE_COMPLETE` hasta que Docker y K3s hayan sido instalados y comprobados. Entonces abra **EC2 → Instances**, seleccione la instancia cuyo nombre coincide con el identificador generado y use **Connect → Session Manager**. En la terminal:
+El script muestra `Identificador generado`; cópielo en la evidencia. Mientras espera, abra **CloudFormation → Stacks** en otra pestaña. Debe aparecer un stack con ese mismo identificador y estado `CREATE_IN_PROGRESS`.
+
+![Lista de stacks de CloudFormation con el laboratorio en CREATE_IN_PROGRESS](docs/images/02-cloudformation-creando-stack.png)
+
+La creación puede tardar entre 3 y 8 minutos. No cierre CloudShell. CloudFormation no indicará `CREATE_COMPLETE` hasta que Docker y K3s hayan sido instalados y comprobados. Entonces abra **EC2 → Instances**, seleccione la instancia cuyo nombre coincide con el identificador generado y use **Connect → Session Manager**. En la terminal:
 
 ```bash
 sudo -iu student
@@ -89,6 +97,7 @@ Las pruebas unitarias también se ejecutan durante cada `docker build`; una imag
 
 ```text
 app/        API Node.js, pruebas y Dockerfile
+docs/       capturas utilizadas en la guía del estudiante
 evidence/   plantilla de entrega
 infra/      CloudFormation para AWS
 k8s/       objetos Kubernetes
