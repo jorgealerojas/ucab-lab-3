@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+printf '%q ' "$@" >>"${AWS_MOCK_LOG:?}"
+printf '\n' >>"$AWS_MOCK_LOG"
+
+case "${1:-} ${2:-}" in
+  "sts get-caller-identity")
+    printf '{"Account":"123456789012"}\n'
+    ;;
+  "cloudformation describe-stacks")
+    if [[ -n "${AWS_MOCK_COLLIDE_ONCE:-}" && ! -e "$AWS_MOCK_COLLIDE_ONCE" ]]; then
+      : >"$AWS_MOCK_COLLIDE_ONCE"
+      exit 0
+    fi
+    exit 255
+    ;;
+  "cloudformation create-stack")
+    ;;
+  "cloudformation wait")
+    ;;
+  *)
+    echo "Llamada AWS inesperada: $*" >&2
+    exit 64
+    ;;
+esac

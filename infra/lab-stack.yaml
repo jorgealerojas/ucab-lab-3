@@ -1,0 +1,138 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: UCAB Lab 3 - instancia preparada para Docker y K3s en us-east-2
+
+Parameters:
+  InstanceType:
+    Type: String
+    Default: c7i-flex.large
+    AllowedValues:
+      - c7i-flex.large
+      - t3.small
+    Description: c7i-flex.large es la opción recomendada del plan gratuito actual.
+  LatestUbuntuAmi:
+    Type: AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>
+    Default: /aws/service/canonical/ubuntu/server/24.04/stable/current/amd64/hvm/ebs-gp3/ami-id
+  RepositoryUrl:
+    Type: String
+    Default: https://github.com/jorgealerojas/ucab-lab-3.git
+  LabVersion:
+    Type: String
+    Default: main
+    AllowedPattern: "[A-Za-z0-9._/-]+"
+
+Rules:
+  OhioOnly:
+    Assertions:
+      - Assert: !Equals [!Ref "AWS::Region", us-east-2]
+        AssertDescription: Este laboratorio debe desplegarse en US East (Ohio), us-east-2.
+
+Resources:
+  LabWaitHandle:
+    Type: AWS::CloudFormation::WaitConditionHandle
+
+  LabSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: UCAB Lab 3 sin trafico entrante; acceso mediante Session Manager
+      Tags:
+        - Key: Name
+          Value: !Ref "AWS::StackName"
+        - Key: LabId
+          Value: !Ref "AWS::StackName"
+
+  LabRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - ec2.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore
+      Tags:
+        - Key: Name
+          Value: !Ref "AWS::StackName"
+        - Key: LabId
+          Value: !Ref "AWS::StackName"
+
+  LabInstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      Roles:
+        - !Ref LabRole
+
+  LabInstance:
+    Type: AWS::EC2::Instance
+    Properties:
+      ImageId: !Ref LatestUbuntuAmi
+      InstanceType: !Ref InstanceType
+      IamInstanceProfile: !Ref LabInstanceProfile
+      SecurityGroups:
+        - !Ref LabSecurityGroup
+      MetadataOptions:
+        HttpTokens: required
+        HttpEndpoint: enabled
+      BlockDeviceMappings:
+        - DeviceName: /dev/sda1
+          Ebs:
+            DeleteOnTermination: true
+            Encrypted: true
+            VolumeSize: 16
+            VolumeType: gp3
+      Tags:
+        - Key: Name
+          Value: !Ref "AWS::StackName"
+        - Key: LabId
+          Value: !Ref "AWS::StackName"
+        - Key: Course
+          Value: INFO-02028
+      UserData:
+        Fn::Base64: !Sub |
+          #!/usr/bin/env bash
+          set -euo pipefail
+          exec > >(tee -a /var/log/ucab-lab-user-data.log) 2>&1
+          SIGNAL_URL='${LabWaitHandle}'
+          signal_stack() {
+            local signal_status="$1"
+            curl --fail --silent --show-error --request PUT --header 'Content-Type:' \
+              --data-binary "{\"Status\":\"$signal_status\",\"Reason\":\"Consulte /var/log/ucab-lab-user-data.log\",\"UniqueId\":\"$(hostname)\",\"Data\":\"bootstrap\"}" \
+              "$SIGNAL_URL"
+          }
+          trap 'signal_stack FAILURE' ERR
+          export DEBIAN_FRONTEND=noninteractive
+          apt-get update
+          apt-get install -y --no-install-recommends ca-certificates git
+          id student >/dev/null 2>&1 || useradd --create-home --shell /bin/bash student
+          printf '%s\n' '${AWS::StackName}' >/etc/ucab-lab-id
+          hostnamectl set-hostname '${AWS::StackName}'
+          git clone --depth 1 --branch '${LabVersion}' '${RepositoryUrl}' /home/student/ucab-lab-3
+          chown -R student:student /home/student/ucab-lab-3
+          K3S_VERSION='v1.37.1+k3s1' LAB_USER=student /home/student/ucab-lab-3/scripts/bootstrap-instance.sh
+          signal_stack SUCCESS
+          trap - ERR
+
+  LabWaitCondition:
+    Type: AWS::CloudFormation::WaitCondition
+    DependsOn: LabInstance
+    Properties:
+      Handle: !Ref LabWaitHandle
+      Timeout: "900"
+      Count: 1
+
+Outputs:
+  InstanceId:
+    Description: Identificador para abrir la sesión en Systems Manager
+    Value: !Ref LabInstance
+  Region:
+    Value: !Ref "AWS::Region"
+  StudentCommand:
+    Description: Ejecute este comando al entrar por Session Manager
+    Value: sudo -iu student bash -lc 'cd ~/ucab-lab-3 && make doctor'
+  LabId:
+    Description: Identificador único generado automáticamente para este laboratorio
+    Value: !Ref "AWS::StackName"

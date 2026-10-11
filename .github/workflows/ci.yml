@@ -1,0 +1,50 @@
+name: Validación
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Obtener repositorio
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Pruebas unitarias
+        working-directory: app
+        run: npm test
+
+      - name: Probar identificador y despliegue sin crear recursos AWS
+        run: make test-scripts
+
+      - name: Validar scripts de shell
+        run: >-
+          docker run --rm -v "$PWD:/mnt" -w /mnt koalaman/shellcheck:stable
+          scripts/*.sh tests/*.sh tests/bin/aws
+
+      - name: Validar Dockerfile
+        run: docker run --rm -i hadolint/hadolint:latest-alpine < app/Dockerfile
+
+      - name: Construir imagen y ejecutar pruebas embebidas
+        run: docker build --build-arg APP_VERSION=v1 -t ucab-api:v1 app
+
+      - name: Instalar validadores YAML y CloudFormation
+        run: pip install cfn-lint yamllint
+
+      - name: Validar CloudFormation
+        run: cfn-lint infra/lab-stack.yaml
+
+      - name: Validar YAML
+        run: >-
+          yamllint
+          -d '{extends: default, rules: {line-length: disable, document-start: disable, truthy: disable, empty-lines: {max-end: 1}}}'
+          infra/lab-stack.yaml k8s .github/workflows/ci.yml

@@ -1,0 +1,14 @@
+{
+  "name": "ucab-lab-3-api",
+  "version": "1.0.0",
+  "private": true,
+  "description": "API mínima para el laboratorio de Docker y Kubernetes de la UCAB",
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "start": "node src/server.js",
+    "test": "node --test"
+  }
+}

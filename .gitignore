@@ -1,0 +1,6 @@
+node_modules/
+coverage/
+.env
+*.log
+evidence/evidence.md
+INSTRUCTOR_GUIDE.md

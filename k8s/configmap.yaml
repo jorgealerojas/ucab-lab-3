@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ucab-api-config
+  labels:
+    app.kubernetes.io/name: ucab-api
+data:
+  APP_MESSAGE: "Hola desde Kubernetes en la UCAB"
