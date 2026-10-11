@@ -46,6 +46,12 @@ El script muestra `Identificador generado`; cópielo en la evidencia. Mientras e
 
 ![Lista de stacks de CloudFormation con el laboratorio en CREATE_IN_PROGRESS](docs/images/02-cloudformation-creando-stack.png)
 
+Pulse el nombre del stack para abrir **Stack details → Events**. Use el botón de actualizar para seguir cada recurso. `CREATE_IN_PROGRESS` indica que continúa trabajando y `CREATE_COMPLETE` que el recurso terminó correctamente.
+
+![Detalle de CloudFormation mostrando los eventos y estados de los recursos del stack](docs/images/03-eventos-detalle-stack.png)
+
+Si aparece `CREATE_FAILED`, seleccione el evento fallido o **View root cause** y consulte [TROUBLESHOOTING.md](TROUBLESHOOTING.md). No modifique ni elimine recursos individuales desde esta vista.
+
 La creación puede tardar entre 3 y 8 minutos. No cierre CloudShell. CloudFormation no indicará `CREATE_COMPLETE` hasta que Docker y K3s hayan sido instalados y comprobados. Entonces abra **EC2 → Instances**, seleccione la instancia cuyo nombre coincide con el identificador generado y use **Connect → Session Manager**. En la terminal:
 
 ```bash

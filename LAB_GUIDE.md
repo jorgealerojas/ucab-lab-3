@@ -34,6 +34,18 @@ Sin interrumpir el comando, abra **CloudFormation → Stacks** en otra pestaña.
 
 ![Stack del laboratorio visible en CloudFormation con estado CREATE_IN_PROGRESS](docs/images/02-cloudformation-creando-stack.png)
 
+Pulse el nombre del stack. En **Stack details → Events** podrá observar cómo CloudFormation crea el rol, Security Group, Instance Profile, instancia y condición de espera. Actualice la lista con el botón circular de la esquina superior derecha:
+
+![Vista detallada de los eventos de CloudFormation durante la creación del laboratorio](docs/images/03-eventos-detalle-stack.png)
+
+Interprete los estados así:
+
+- `CREATE_IN_PROGRESS`: el recurso continúa en preparación.
+- `CREATE_COMPLETE`: el recurso terminó correctamente.
+- `CREATE_FAILED`: abra el evento o pulse **View root cause** para leer la causa exacta.
+
+No elimine recursos individuales desde **Events**. La creación y la limpieza deben realizarse siempre sobre el stack completo.
+
 Espere a que CloudShell muestre `LABORATORIO LISTO` y a que el stack cambie a `CREATE_COMPLETE`. Puede tardar entre 3 y 8 minutos. No continúe si aparece `CREATE_FAILED` o `ROLLBACK_COMPLETE`; consulte [TROUBLESHOOTING.md](TROUBLESHOOTING.md).
 
 ### 4. Entrar a la instancia
