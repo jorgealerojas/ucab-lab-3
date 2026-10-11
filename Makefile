@@ -21,6 +21,7 @@ test: ## Ejecuta las pruebas unitarias en Node 22
 test-scripts: ## Prueba el despliegue sin crear recursos reales en AWS
 	@./tests/deploy-lab.test.sh
 	@./tests/wait-k3s-ready.test.sh
+	@./tests/docs-command-blocks.test.sh
 
 image: ## Prueba y construye IMAGE:VERSION
 	@docker build --build-arg APP_VERSION=$(VERSION) -t $(IMAGE):$(VERSION) app

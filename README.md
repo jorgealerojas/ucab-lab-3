@@ -34,11 +34,15 @@ Seleccione **US East (Ohio), `us-east-2`** en la consola. Abra CloudShell con el
 
 ![Consola AWS con el icono de CloudShell y la terminal abierta en us-east-2](docs/images/01-abrir-cloudshell.png)
 
-En CloudShell, ejecute:
+Descargue el script de despliegue. Si termina correctamente, no muestra salida:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/jorgealerojas/ucab-lab-3/main/scripts/deploy-lab.sh \
-  -o /tmp/deploy-lab.sh
+curl -fsSL https://raw.githubusercontent.com/jorgealerojas/ucab-lab-3/main/scripts/deploy-lab.sh -o /tmp/deploy-lab.sh
+```
+
+Ejecute el script. Debe mostrar el identificador automático y `Creando el laboratorio`:
+
+```bash
 bash /tmp/deploy-lab.sh
 ```
 
@@ -52,11 +56,23 @@ Pulse el nombre del stack para abrir **Stack details → Events**. Use el botón
 
 Si aparece `CREATE_FAILED`, seleccione el evento fallido o **View root cause** y consulte [TROUBLESHOOTING.md](TROUBLESHOOTING.md). No modifique ni elimine recursos individuales desde esta vista.
 
-La creación puede tardar entre 3 y 8 minutos. No cierre CloudShell. CloudFormation no indicará `CREATE_COMPLETE` hasta que Docker y K3s hayan sido instalados y comprobados. Entonces abra **EC2 → Instances**, seleccione la instancia cuyo nombre coincide con el identificador generado y use **Connect → Session Manager**. En la terminal:
+La creación puede tardar entre 3 y 8 minutos. No cierre CloudShell. CloudFormation no indicará `CREATE_COMPLETE` hasta que Docker y K3s hayan sido instalados y comprobados. Entonces abra **EC2 → Instances**, seleccione la instancia cuyo nombre coincide con el identificador generado y use **Connect → Session Manager**.
+
+Cambie al usuario del laboratorio. El prompt debe mostrar `student`:
 
 ```bash
 sudo -iu student
+```
+
+Entre al repositorio clonado; este comando no muestra salida:
+
+```bash
 cd ~/ucab-lab-3
+```
+
+Compruebe el entorno. El resultado esperado termina con `Entorno listo`:
+
+```bash
 make doctor
 ```
 
@@ -64,11 +80,25 @@ Continúe con [LAB_GUIDE.md](LAB_GUIDE.md).
 
 ## Limpieza obligatoria
 
-Al terminar, cierre la sesión y elimine el stack desde CloudShell:
+Al terminar, cierre la sesión y regrese a CloudShell. Copie el identificador generado en una variable y compruébelo antes de eliminar nada:
 
 ```bash
-STACK_NAME="ucab-lab-3-a1b2c3d4e5f60708" # Copie el valor generado; no invente otro
+STACK_NAME="ucab-lab-3-a1b2c3d4e5f60708"
+```
+
+```bash
+echo "$STACK_NAME"
+```
+
+Solicite la eliminación del stack completo. Es normal que el comando no produzca salida:
+
+```bash
 aws cloudformation delete-stack --stack-name "$STACK_NAME" --region us-east-2
+```
+
+Espere la confirmación de AWS. El comando vuelve al prompt cuando finaliza:
+
+```bash
 aws cloudformation wait stack-delete-complete --stack-name "$STACK_NAME" --region us-east-2
 ```
 
@@ -78,22 +108,43 @@ El stack elimina la instancia, el volumen EBS, el Security Group y el rol creado
 
 El laboratorio admite varios stacks simultáneos en una misma cuenta. Cada ejecución genera 64 bits aleatorios, verifica el nombre contra CloudFormation y crea el stack de forma atómica. CloudFormation genera nombres físicos distintos para los demás recursos. Docker y Kubernetes se ejecutan dentro de instancias separadas, por lo que sus contenedores, puertos, imágenes y Pods tampoco colisionan.
 
-Antes de la clase, el docente debe validar la cuota para el número de participantes simultáneos:
+Antes de la clase, el docente debe descargar el verificador de cuota. Si funciona, no muestra salida:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/jorgealerojas/ucab-lab-3/main/scripts/check-shared-account.sh \
-  -o /tmp/check-shared-account.sh
-bash /tmp/check-shared-account.sh 10 # Reemplace 10 por el máximo simultáneo
+curl -fsSL https://raw.githubusercontent.com/jorgealerojas/ucab-lab-3/main/scripts/check-shared-account.sh -o /tmp/check-shared-account.sh
+```
+
+Luego debe ejecutarlo con el máximo de participantes simultáneos. El resultado muestra vCPU requeridas, cuota aplicada e instancias activas:
+
+```bash
+bash /tmp/check-shared-account.sh 5
 ```
 
 Cada laboratorio consume 2 vCPU. Los créditos y cuotas son compartidos por toda la cuenta. Los nombres únicos evitan colisiones, pero no aumentan esos límites y tampoco aíslan permisos si todos usan las mismas credenciales. Cuando sea posible, use identidades IAM diferentes; si comparten una sola identidad, cada alumno debe operar exclusivamente el identificador que generó su ejecución.
 
 ## Desarrollo y validación
 
+Cada comando representa una etapa diferente. Ejecute las pruebas unitarias; deben aprobarse cuatro casos:
+
 ```bash
 make test
+```
+
+Construya la imagen `v1`; el build vuelve a ejecutar las pruebas:
+
+```bash
 make image VERSION=v1
+```
+
+Inicie un contenedor en el puerto 8080; Docker devuelve su ID:
+
+```bash
 make run VERSION=v1
+```
+
+Compruebe `/health` y la respuesta principal; debe recibir JSON válido:
+
+```bash
 make smoke
 ```
 
