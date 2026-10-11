@@ -66,11 +66,17 @@ if ! aws cloudformation wait stack-create-complete \
   --stack-name "$stack_name" \
   --region "$region"; then
   echo "ERROR: CloudFormation no pudo completar el laboratorio." >&2
-  echo "Últimos eventos:" >&2
+  echo "Recursos que fallaron:" >&2
   aws cloudformation describe-stack-events \
     --stack-name "$stack_name" \
     --region "$region" \
-    --query 'StackEvents[0:8].[Timestamp,LogicalResourceId,ResourceStatus,ResourceStatusReason]' \
+    --query "StackEvents[?ResourceStatus=='CREATE_FAILED'].[Timestamp,LogicalResourceId,ResourceType,ResourceStatusReason]" \
+    --output table >&2 || true
+  echo "Últimos eventos del stack:" >&2
+  aws cloudformation describe-stack-events \
+    --stack-name "$stack_name" \
+    --region "$region" \
+    --query 'StackEvents[0:12].[Timestamp,LogicalResourceId,ResourceStatus,ResourceStatusReason]' \
     --output table >&2 || true
   echo "Consulte TROUBLESHOOTING.md antes de reintentar." >&2
   exit 1

@@ -34,8 +34,7 @@ else
   systemctl enable --now k3s
 fi
 
-k3s kubectl wait --for=condition=Ready node --all --timeout=180s
-k3s kubectl get node
+"$(dirname -- "${BASH_SOURCE[0]}")/wait-k3s-ready.sh"
 systemctl stop k3s
 
 chown -R "$LAB_USER:$LAB_USER" "/home/$LAB_USER"

@@ -34,6 +34,17 @@ collision_stack=$(sed -n 's/^Identificador generado: //p' <<<"$collision_output"
 [[ "$(grep -c '^cloudformation create-stack ' "$AWS_MOCK_LOG")" -eq 1 ]]
 unset AWS_MOCK_COLLIDE_ONCE
 
+: >"$AWS_MOCK_LOG"
+if AWS_MOCK_WAIT_FAIL=true \
+  AWS_REGION=us-east-2 \
+  "$repo_dir/scripts/deploy-lab.sh" >"$test_dir/stack-failure.out" 2>&1; then
+  echo "Un waiter fallido debió producir un error." >&2
+  exit 1
+fi
+grep -q 'Recursos que fallaron' "$test_dir/stack-failure.out"
+grep -q 'CREATE_FAILED' "$AWS_MOCK_LOG"
+[[ "$(grep -c '^cloudformation describe-stack-events ' "$AWS_MOCK_LOG")" -eq 2 ]]
+
 if AWS_REGION=us-east-1 "$repo_dir/scripts/deploy-lab.sh" >"$test_dir/wrong-region.out" 2>&1; then
   echo "La región incorrecta debió ser rechazada" >&2
   exit 1

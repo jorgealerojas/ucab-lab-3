@@ -18,6 +18,9 @@ case "${1:-} ${2:-}" in
   "cloudformation create-stack")
     ;;
   "cloudformation wait")
+    [[ "${AWS_MOCK_WAIT_FAIL:-false}" != true ]] || exit 255
+    ;;
+  "cloudformation describe-stack-events")
     ;;
   *)
     echo "Llamada AWS inesperada: $*" >&2

@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+state_file="${K3S_MOCK_STATE:?}"
+log_file="${K3S_MOCK_LOG:?}"
+printf '%s\n' "$*" >>"$log_file"
+
+if [[ "${1:-} ${2:-} ${3:-} ${4:-} ${5:-}" == "kubectl get nodes -o name" ]]; then
+  count=0
+  [[ ! -f "$state_file" ]] || count=$(<"$state_file")
+  count=$((count + 1))
+  printf '%s\n' "$count" >"$state_file"
+  if [[ "${K3S_MOCK_NEVER_READY:-false}" != true && "$count" -ge 3 ]]; then
+    printf 'node/mock-node\n'
+  fi
+  exit 0
+fi
+
+if [[ "${1:-} ${2:-} ${3:-} ${4:-} ${5:-}" == "kubectl get nodes -o wide" ]]; then
+  printf 'NAME        STATUS   ROLES\nmock-node   Ready    control-plane\n'
+  exit 0
+fi
+
+if [[ "${1:-} ${2:-}" == "kubectl wait" ]]; then
+  printf 'node/mock-node condition met\n'
+  exit 0
+fi
+
+echo "Llamada k3s inesperada: $*" >&2
+exit 64

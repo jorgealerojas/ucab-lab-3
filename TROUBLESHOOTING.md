@@ -114,6 +114,8 @@ sudo k3s kubectl get nodes -o wide
 
 En `t3.small`, libere memoria con `make stop` antes de `make k8s-start`. Espere hasta dos minutos; si persiste, conserve los logs y avise al docente.
 
+Si CloudFormation muestra `WaitCondition received failed message`, consulte el evento `CREATE_FAILED` y recupere la salida de consola antes de borrar el stack. El bootstrap espera explícitamente que el objeto `Node` exista antes de consultar su condición `Ready`, evitando el error transitorio `no matching resources found`.
+
 ## Un Pod queda en `ImagePullBackOff`
 
 Docker y K3s usan almacenes de imágenes distintos. Confirme la importación y el tag:
