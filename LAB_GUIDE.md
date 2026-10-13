@@ -116,12 +116,6 @@ make test
 
 El resumen esperado contiene `tests 4`, `pass 4` y `fail 0`. Si alguna prueba falla, no continúe con la construcción de la imagen.
 
-Preguntas para la evidencia:
-
-1. ¿Por qué `/health` tiene una respuesta más pequeña que `/`?
-2. ¿Qué evita que se construya la imagen si una prueba falla?
-3. ¿Cuál es la diferencia entre `APP_VERSION` y `APP_MESSAGE` en este laboratorio?
-
 ## 30–45 min — Construir una imagen y ejecutar un contenedor
 
 Construya la versión `v1`. Docker ejecutará también las pruebas de la etapa `test` antes de producir la imagen final.
@@ -448,15 +442,17 @@ curl -s http://127.0.0.1:30080/ | jq .
 
 La respuesta debe contener `"version": "v2"`. La estrategia permite un Pod adicional y no permite ninguno no disponible (`maxSurge: 1`, `maxUnavailable: 0`).
 
-## 99–102 min — Síntesis
+## 99–102 min — Preguntas para el informe
 
-Complete en la evidencia:
+Responda las siguientes preguntas con sus propias palabras. Apoye cada respuesta con las evidencias que obtuvo durante la práctica e identifique claramente las capturas relacionadas.
 
-- imagen vs. contenedor;
-- contenedor individual vs. Pod administrado;
-- ejecución imperativa vs. estado deseado;
-- qué aportaron Deployment, Service y ConfigMap;
-- por qué este clúster de un nodo no representa alta disponibilidad.
+1. ¿Cuál es la diferencia entre la imagen `ucab-api:v1` y los contenedores creados a partir de ella? Utilice sus evidencias para explicar qué elementos comparten y cuáles son propios de cada contenedor.
+2. ¿Por qué Docker no volvió a crear `ucab-api-2` después de eliminarlo, mientras que Kubernetes sí creó un Pod de reemplazo? Relacione su respuesta con el estado deseado y la reconciliación.
+3. ¿Qué función cumplen el Deployment, el Service y el ConfigMap en esta práctica, y cómo se relacionan para ejecutar y exponer la aplicación?
+4. ¿Por qué fue necesario importar la imagen desde Docker al almacén de imágenes de K3s (`containerd`) antes de desplegarla en Kubernetes?
+5. ¿Qué ocurrió con la aplicación durante el escalado y el rolling update? Explique el efecto de las réplicas, `maxSurge` y `maxUnavailable`, y por qué este clúster de un solo nodo no ofrece alta disponibilidad.
+
+### Verificación final opcional
 
 Opcionalmente ejecute la verificación funcional automatizada. Esta comprueba réplicas, Service y versión desplegada.
 

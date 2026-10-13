@@ -16,7 +16,6 @@
 
 - Resultado resumido de `make test`:
 - ID de `ucab-api:v1`:
-- ¿Qué etapa del Dockerfile impide producir la imagen si fallan las pruebas?
 
 ## 2. Contenedores Docker
 
@@ -26,8 +25,6 @@
 | ucab-api-2 | 8081 | |
 | ucab-api-3 | 8082 | |
 
-Explique por qué `ucab-api-2` no reapareció después de eliminarlo:
-
 ## 3. Kubernetes
 
 - Réplicas iniciales disponibles:
@@ -36,17 +33,15 @@ Explique por qué `ucab-api-2` no reapareció después de eliminarlo:
 - Pod que lo reemplazó:
 - Versión devuelta después del rolling update:
 
-¿Qué objeto mantuvo el número de Pods deseado y qué objeto proporcionó un endpoint estable?
+## 4. Preguntas para el informe
 
-## 4. Comparación razonada
+Responda con sus propias palabras y relacione cada respuesta con las capturas obtenidas durante la práctica.
 
-Explique brevemente:
-
-1. Imagen vs. contenedor.
-2. Contenedor independiente vs. Pod administrado por un Deployment.
-3. Ejecución imperativa vs. estado deseado.
-4. Qué problema resuelve el ConfigMap.
-5. Por qué un clúster K3s de un nodo no ofrece alta disponibilidad.
+1. ¿Cuál es la diferencia entre la imagen `ucab-api:v1` y los contenedores creados a partir de ella? Utilice sus evidencias para explicar qué elementos comparten y cuáles son propios de cada contenedor.
+2. ¿Por qué Docker no volvió a crear `ucab-api-2` después de eliminarlo, mientras que Kubernetes sí creó un Pod de reemplazo? Relacione su respuesta con el estado deseado y la reconciliación.
+3. ¿Qué función cumplen el Deployment, el Service y el ConfigMap en esta práctica, y cómo se relacionan para ejecutar y exponer la aplicación?
+4. ¿Por qué fue necesario importar la imagen desde Docker al almacén de imágenes de K3s (`containerd`) antes de desplegarla en Kubernetes?
+5. ¿Qué ocurrió con la aplicación durante el escalado y el rolling update? Explique el efecto de las réplicas, `maxSurge` y `maxUnavailable`, y por qué este clúster de un solo nodo no ofrece alta disponibilidad.
 
 ## 5. Limpieza
 
