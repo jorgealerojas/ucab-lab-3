@@ -78,8 +78,6 @@ make doctor
 
 Continúe con [LAB_GUIDE.md](LAB_GUIDE.md).
 
-El informe final tiene formato libre. Debe identificar al estudiante, responder todas las preguntas de la guía y presentar capturas explicadas de cada fase, incluida la limpieza. [evidence/evidence-template.md](evidence/evidence-template.md) funciona como lista de control opcional.
-
 ## Limpieza obligatoria
 
 Al terminar, cierre la sesión y regrese a CloudShell. Copie el identificador generado en una variable y compruébelo antes de eliminar nada:

@@ -6,7 +6,7 @@
 
 **Meta:** llevar una API probada desde Docker hasta Kubernetes y observar cuándo aparece el valor de la orquestación.
 
-> Ejecute los comandos uno por uno y lea qué hace cada uno antes de copiarlo. Observe el resultado indicado y deténgase si obtiene un error. Tome capturas legibles durante **todas las fases**: deben mostrar el comando ejecutado y su resultado. `evidence/evidence-template.md` es una lista de control opcional, no un formato obligatorio.
+> Ejecute los comandos uno por uno y lea qué hace cada uno antes de copiarlo. Observe el resultado indicado y deténgase si obtiene un error. Complete `evidence/evidence-template.md` mientras avanza.
 
 ## 0–15 min — Preparar el entorno
 
@@ -54,23 +54,7 @@ Espere a que CloudShell muestre `LABORATORIO LISTO` y a que el stack cambie a `C
 
 ### 4. Entrar a la instancia
 
-Si la cuenta es compartida, no abra, modifique ni elimine el stack de otro estudiante. En **EC2 → Instances**, seleccione la instancia cuyo nombre coincide exactamente con su identificador.
-
-Aunque **Instance state** ya muestre `Running`, no abra Session Manager mientras **Status check** diga `Initializing`. AWS todavía está comprobando el sistema, la instancia y el volumen adjunto:
-
-![Instancia EC2 en ejecución con sus status checks todavía inicializando](docs/images/04-ec2-status-checks-inicializando.png)
-
-Actualice la lista hasta que **Status check** muestre en verde `3/3 checks passed`. Solo entonces seleccione la instancia y abra **Connect → Session Manager**:
-
-![Instancia EC2 con los tres status checks aprobados](docs/images/05-ec2-status-checks-aprobados.png)
-
-**Evidencia de preparación:** tome capturas del stack en `CREATE_COMPLETE`, de la instancia con `3/3 checks passed` y del resultado completo de `make doctor`. Deben verse su identificador de laboratorio y los estados, pero no exponga credenciales ni tokens.
-
-**Preguntas para el informe:**
-
-1. ¿Por qué `Running` no es suficiente para asumir que la instancia está lista?
-2. ¿Qué valida `make doctor` que no se observa directamente en la consola EC2?
-3. ¿Por qué cada estudiante debe entrar únicamente a la instancia cuyo nombre coincide con su identificador?
+Si la cuenta es compartida, no abra, modifique ni elimine el stack de otro estudiante. En **EC2 → Instances**, seleccione la instancia cuyo nombre coincide exactamente con su identificador y abra **Connect → Session Manager**.
 
 Cambie del usuario de Session Manager al usuario preparado para el laboratorio. El prompt debe pasar a mostrar `student`.
 
@@ -120,9 +104,7 @@ make test
 
 El resumen esperado contiene `tests 4`, `pass 4` y `fail 0`. Si alguna prueba falla, no continúe con la construcción de la imagen.
 
-**Evidencia:** capture el comando `make test` y el resumen donde se vean las cuatro pruebas aprobadas. Incluya también un fragmento relevante del Dockerfile donde aparezca la etapa `test`.
-
-**Preguntas para el informe:**
+Preguntas para la evidencia:
 
 1. ¿Por qué `/health` tiene una respuesta más pequeña que `/`?
 2. ¿Qué evita que se construya la imagen si una prueba falla?
@@ -183,14 +165,6 @@ docker ps
 Debe aparecer `ucab-api`, la imagen `ucab-api:v1` y el mapeo `8080->3000`.
 
 Una imagen es la plantilla inmutable. `docker run` crea una instancia ejecutable con su propia identidad y capa escribible.
-
-**Evidencia:** capture `docker image ls ucab-api`, la respuesta de `make smoke`, la inspección donde aparece `1000:1000` y `docker ps` con el puerto publicado.
-
-**Preguntas para el informe:**
-
-1. ¿Qué diferencia existe entre la imagen `ucab-api:v1` y el contenedor `ucab-api`?
-2. ¿Por qué el contenedor ejecuta la aplicación como `1000:1000` en lugar de `root`?
-3. ¿Qué función cumple el healthcheck y en qué se diferencia de comprobar solamente que el proceso existe?
 
 ## 45–57 min — Varias instancias y ausencia de reconciliación
 
@@ -256,14 +230,6 @@ docker rm -f ucab-api-3
 
 Debe imprimir `ucab-api-3`.
 
-**Evidencia:** capture los tres contenedores en ejecución, las respuestas con hostnames diferentes y la lista posterior a eliminar `ucab-api-2`.
-
-**Preguntas para el informe:**
-
-1. ¿Cómo demuestra el hostname que los contenedores son instancias diferentes de una misma imagen?
-2. ¿Por qué Docker no volvió a crear `ucab-api-2` después de eliminarlo?
-3. ¿Qué capacidad falta aquí que luego aporta Kubernetes?
-
 ## 57–68 min — Iniciar Kubernetes y transferir la imagen
 
 Inicie K3s y espere que su único nodo alcance la condición `Ready`.
@@ -324,15 +290,6 @@ Service    → selecciona Pods por label
 ConfigMap  → aporta configuración sin reconstruir la imagen
 ```
 
-**Evidencia:** capture el nodo con estado `Ready`, la imagen `ucab-api:v1` dentro del almacén de K3s y los fragmentos de los manifiestos donde se vean réplicas, selector y configuración.
-
-**Preguntas para el informe:**
-
-1. ¿Por qué no basta con que la imagen exista en Docker y es necesario importarla en K3s?
-2. ¿Qué estado declara el Deployment?
-3. ¿Cómo relaciona el selector del Service a los Pods correctos?
-4. ¿Qué ventaja ofrece el ConfigMap frente a escribir el mensaje dentro de la imagen?
-
 ## 68–82 min — Declarar y observar el estado deseado
 
 Aplique todos los manifiestos y espere a que el Deployment termine.
@@ -366,14 +323,6 @@ for i in {1..12}; do curl -s http://127.0.0.1:30080/ | jq -r '.hostname'; done
 ```
 
 Debe observar más de un hostname. El `Service` conserva un endpoint mientras distribuye solicitudes entre Pods que pueden cambiar.
-
-**Evidencia:** capture `make k8s-status` con tres Pods `Running`, la respuesta de `make k8s-smoke` y la secuencia de hostnames obtenida mediante el mismo endpoint.
-
-**Preguntas para el informe:**
-
-1. ¿Qué objeto garantiza las tres réplicas y qué objeto proporciona el endpoint estable?
-2. ¿Por qué el cliente usa siempre el mismo puerto aunque respondan Pods diferentes?
-3. ¿Qué evidencia demuestra que hubo distribución de solicitudes?
 
 ## 82–92 min — Escalado y autocuración
 
@@ -437,14 +386,6 @@ sudo k3s kubectl scale deployment/ucab-api --replicas=3
 
 La salida debe indicar nuevamente `scaled`.
 
-**Evidencia:** capture los cuatro Pods antes de la eliminación y otra captura donde se vea el Pod sustituto con un nombre diferente. Registre el nombre eliminado y el nombre nuevo.
-
-**Preguntas para el informe:**
-
-1. ¿Qué componente detectó que faltaba una réplica?
-2. ¿Por qué el Pod nuevo no conserva el nombre del Pod eliminado?
-3. ¿Qué relación existe entre estado deseado, estado real y reconciliación?
-
 ## 92–99 min — Rolling update
 
 Construya una nueva imagen etiquetada `v2`. El cambio de versión se inyecta durante el build.
@@ -495,14 +436,6 @@ curl -s http://127.0.0.1:30080/ | jq .
 
 La respuesta debe contener `"version": "v2"`. La estrategia permite un Pod adicional y no permite ninguno no disponible (`maxSurge: 1`, `maxUnavailable: 0`).
 
-**Evidencia:** capture el progreso o finalización del rollout, su historial de revisiones y la respuesta final donde aparezca `"version": "v2"`.
-
-**Preguntas para el informe:**
-
-1. ¿Qué cambió en el Deployment para iniciar el rolling update?
-2. ¿Cómo influyen `maxSurge: 1` y `maxUnavailable: 0` durante la actualización?
-3. ¿Qué evidencia confirma que la versión nueva quedó sirviendo tráfico?
-
 ## 99–102 min — Síntesis
 
 Complete en la evidencia:
@@ -520,8 +453,6 @@ make verify
 ```
 
 El resultado esperado termina sin errores e informa que la verificación fue satisfactoria.
-
-**Evidencia:** capture el resumen completo de `make verify`. Explique si la automatización confirmó los mismos comportamientos que observó manualmente.
 
 ## 102–105 min — Limpieza obligatoria
 
@@ -570,20 +501,3 @@ aws cloudformation wait stack-delete-complete --stack-name "$STACK_NAME" --regio
 ```
 
 Compruebe en **CloudFormation → Stacks** que el stack desapareció. No basta con detener la instancia: hay que eliminar el stack para retirar también volumen, Security Group, rol e Instance Profile.
-
-**Evidencia de limpieza:** capture CloudShell después de que finalice `stack-delete-complete` y la consola de CloudFormation sin su stack. La captura debe permitir verificar el identificador eliminado.
-
-## Informe a entregar
-
-El formato del informe es **libre**: puede usar un documento, presentación o PDF con la estructura que considere más clara. La evaluación no depende de imitar una plantilla, sino de demostrar el trabajo realizado.
-
-El informe debe contener como mínimo:
-
-- nombre, cédula, sección y fecha;
-- identificador exacto del laboratorio;
-- capturas legibles y ordenadas de todas las fases solicitadas;
-- una explicación breve de qué se hizo y qué demuestra cada evidencia;
-- respuestas razonadas a todas las preguntas de la guía;
-- evidencia del resultado de las pruebas y de la limpieza final.
-
-No entregue una colección de capturas sin contexto. Cada imagen debe acompañarse de una descripción que indique el comando, el resultado relevante y la conclusión obtenida. Puede usar [evidence/evidence-template.md](evidence/evidence-template.md) como lista de control, adaptarla o crear su propia estructura.
