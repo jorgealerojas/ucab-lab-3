@@ -1,8 +1,12 @@
 # Evidencia — UCAB Lab 3
 
+> Lista de control opcional. El formato del informe es libre; conserve las preguntas originales y acompañe cada paso con una captura explicada.
+
 **Nombre:**
 
 **Cédula:**
+
+**Sección:**
 
 **Fecha:**
 

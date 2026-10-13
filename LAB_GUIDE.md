@@ -6,7 +6,11 @@
 
 **Meta:** llevar una API probada desde Docker hasta Kubernetes y observar cuándo aparece el valor de la orquestación.
 
-> Ejecute los comandos uno por uno y lea qué hace cada uno antes de copiarlo. Observe el resultado indicado y deténgase si obtiene un error. Complete `evidence/evidence-template.md` mientras avanza.
+> Ejecute los comandos uno por uno y lea qué hace cada uno antes de copiarlo. Observe el resultado indicado y deténgase si obtiene un error. **Cada paso de la práctica debe quedar respaldado por una captura legible del comando y su resultado.** No espere al final para reunir las evidencias.
+
+## Evidencias durante la práctica
+
+En cada sección tome capturas donde se distingan el comando ejecutado y la salida relevante. Acompañe cada captura con una breve explicación de qué hizo, qué resultado obtuvo y qué demuestra. No incluya credenciales, tokens ni información sensible. Puede usar `evidence/evidence-template.md` como lista de control.
 
 ## 0–15 min — Preparar el entorno
 
@@ -54,7 +58,15 @@ Espere a que CloudShell muestre `LABORATORIO LISTO` y a que el stack cambie a `C
 
 ### 4. Entrar a la instancia
 
-Si la cuenta es compartida, no abra, modifique ni elimine el stack de otro estudiante. En **EC2 → Instances**, seleccione la instancia cuyo nombre coincide exactamente con su identificador y abra **Connect → Session Manager**.
+Si la cuenta es compartida, no abra, modifique ni elimine el stack de otro estudiante. En **EC2 → Instances**, seleccione la instancia cuyo nombre coincide exactamente con su identificador.
+
+Aunque **Instance state** muestre `Running`, espere si **Status check** todavía dice `Initializing`. AWS aún está comprobando la instancia y sus recursos asociados:
+
+![Instancia EC2 en ejecución con sus status checks todavía inicializando](docs/images/04-ec2-status-checks-inicializando.png)
+
+Actualice la lista hasta que **Status check** muestre en verde `3/3 checks passed`. Tome una captura como evidencia y solo entonces abra **Connect → Session Manager**:
+
+![Instancia EC2 con los tres status checks aprobados](docs/images/05-ec2-status-checks-aprobados.png)
 
 Cambie del usuario de Session Manager al usuario preparado para el laboratorio. El prompt debe pasar a mostrar `student`.
 
@@ -501,3 +513,15 @@ aws cloudformation wait stack-delete-complete --stack-name "$STACK_NAME" --regio
 ```
 
 Compruebe en **CloudFormation → Stacks** que el stack desapareció. No basta con detener la instancia: hay que eliminar el stack para retirar también volumen, Security Group, rol e Instance Profile.
+
+## Informe a entregar
+
+El formato del informe es **libre**. Puede organizarlo como documento, presentación o PDF; lo importante es que:
+
+- incluya nombre, cédula, sección, fecha e identificador del laboratorio;
+- muestre evidencia detallada de cada paso de la práctica;
+- explique brevemente qué demuestra cada captura;
+- responda las preguntas originales incluidas en esta guía;
+- incluya evidencia de la limpieza final del stack.
+
+`evidence/evidence-template.md` es una ayuda opcional para revisar que no falte información; no es un formato obligatorio.
